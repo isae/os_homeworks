@@ -1,4 +1,4 @@
-CFLAGS = -Wall -shared -fPIC
+CFLAGS = -Wall -shared -fPIC -std=c99
 all: libhelpers.so
 
 libhelpers.so:
