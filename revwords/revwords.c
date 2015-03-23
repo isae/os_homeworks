@@ -21,8 +21,13 @@ int main()
     char buffer[BUFFER_SIZE];
     ssize_t result;
     size_t prev = 0;
-    while((result = read_until(STDIN_FILENO,buffer+prev,BUFFER_SIZE-prev, DELIM))>0)
+    while((result = read_until(
+                    STDIN_FILENO,
+                    buffer+prev,
+                    BUFFER_SIZE-prev,
+                    DELIM))>0)
     {
+        //printf("Got %d symbols\n", (int)result);
         result+=prev;
         int pos=0;
         int prev_delim = 0;//position after previous delimiter
@@ -30,7 +35,7 @@ int main()
         {
             if(buffer[pos] == DELIM){
                 reverse(buffer, pos-prev_delim);
-                if(write_(STDOUT_FILENO,buffer+prev_delim,pos-prev_delim)==-1)
+                if(write_(STDOUT_FILENO,buffer+prev_delim,pos-prev_delim+1)==-1)
                     perror("Write failed"); 
                 prev_delim=pos+1;
             } 
