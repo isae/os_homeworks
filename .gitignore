@@ -1,7 +1,9 @@
 #Temporaries
 *~
 ~*
+*.swp
 
 #Other than C-files
 !*.c
 !*.h
+

@@ -48,6 +48,18 @@ int main(int argc, char* argv[])
         memmove(buffer, buffer+prev_delim, (result-prev_delim)*sizeof(char));
         prev = result-prev_delim;
     }
+    
+    ++prev;
+    memcpy(last_arg, buffer, prev*sizeof(char));
+    last_arg[prev]=0;
+    last_arg[prev-1]=0;//removed \n
+    if(spawn(argv[1],args)==0){
+        last_arg[prev-1]='\n';//added back
+        if(write_(STDOUT_FILENO,last_arg,prev)==-1){
+            perror("Write failed"); 
+            exit(EXIT_FAILURE);
+        }
+    }
 
     return 0;
 }
