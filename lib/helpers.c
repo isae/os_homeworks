@@ -77,7 +77,7 @@ int spawn(const char * file, char * const argv [])
         }
         return result;        
    } else{
-        int fd = open("/dev/null", O_WRONLY|O_CLOEXEC);
+        int fd = open("/dev/null", O_WRONLY);
         dup2(fd, STDOUT_FILENO);
         dup2(fd, STDERR_FILENO);
         execvp(file, argv);
