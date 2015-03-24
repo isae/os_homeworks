@@ -1,5 +1,6 @@
 #Temporaries
 *~
+~*
 
 #Other than C-files
 !*.c

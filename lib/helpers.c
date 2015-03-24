@@ -59,3 +59,30 @@ ssize_t read_until(int fd, void *buf, size_t count, char delimiter)
         return overall;
     }
 }
+
+int spawn(const char * file, char * const argv [])
+{
+    pid_t pid = fork();
+    
+    if(pid){
+        if(pid==-1){
+            perror("Fork failed");
+            exit(EXIT_FAILURE);
+            return -1;
+        }
+        int result;
+        if(waitpid(pid,&result,0)==-1){
+            perror("Wait failed");
+            exit(EXIT_FAILURE);
+        }
+        return result;        
+   } else{
+        int fd = open("/dev/null", O_WRONLY);
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+        execvp(file, argv);
+        exit(EXIT_FAILURE);
+        return -1;
+   } 
+}
+
