@@ -1,7 +1,11 @@
 #Everything
-*
+bufcat/*
+cat/*
+filter/*
+lib/*
+revwords/*
+*~
 #Except C-files and Makefile
 !*.c
 !*.h
 !Makefile
-
