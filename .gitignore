@@ -1,9 +1,7 @@
-#Temporaries
-*~
-~*
-*.swp
-
-#Other than C-files
+#Everything
+*
+#Except C-files and Makefile
 !*.c
 !*.h
+!Makefile
 

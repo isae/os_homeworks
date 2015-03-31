@@ -1,5 +1,5 @@
 CFLAGS = -Wall -shared -fPIC -std=c99
-all: clean libhelpers.so
+all: libhelpers.so
 
 libhelpers.so:
 	gcc $(CFLAGS) -o libhelpers.so helpers.h helpers.c
