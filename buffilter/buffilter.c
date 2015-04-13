@@ -13,6 +13,11 @@ int main(int argc, char* argv[])
 {
     buf_t * in_buf = buf_new(BUFFER_SIZE);
     buf_t * out_buf = buf_new(BUFFER_SIZE);
+    if(in_buf==NULL || out_buf==NULL)
+    {
+        perror("Malloc failed");
+        exit(EXIT_FAILURE);
+    }
     char* args[ARG_SIZE];
     char last_arg[LAST_ARG_SIZE];
     argc-=1;
