@@ -38,7 +38,32 @@ int get_socket(char* port, struct sockaddr* cli, socklen_t* sz)
     *sz = sizeof(client);
     return sock;
 }
-void do_some_job(struct pollfd* pollfds, buf_pair* buf_pairs, int i)
+void kill_pair(struct pollfd* pollfds, int* poll_size,
+        buf_pair* buf_pairs,int* pr_sz, int i)
+{
+    printf("kill pair\n %d %d\n", *poll_size, *pr_sz);
+    struct pollfd* fd1 = &pollfds[2+2*i];
+    struct pollfd* fd2 = &pollfds[2+2*i+1];
+    int size = *pr_sz;
+    printf("ololo %d %d\n", size, (int) sizeof(struct pollfd));
+    if(size>0){
+        if(close(fd1->fd)< 0 || close(fd2->fd) <0){
+            perror("close");
+            exit(EXIT_FAILURE);
+        }
+        memmove(&pollfds[2+2*i], &pollfds[2*size], sizeof(struct pollfd));
+        memmove(&pollfds[2+2*i+1], &pollfds[2*size+1],sizeof(struct pollfd));
+        memmove(&buf_pairs[i], &buf_pairs[size-1], sizeof(buf_pair));
+        *poll_size-=2;
+        *pr_sz-=1;
+    } else {
+        perror("something strange");
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+void do_some_job(struct pollfd* pollfds,int* poll_size, 
+                buf_pair* buf_pairs,int* pr_sz, int i)
 {
     struct pollfd* fd1 = &pollfds[2+2*i];
     struct pollfd* fd2 = &pollfds[2+2*i+1];
@@ -53,36 +78,33 @@ void do_some_job(struct pollfd* pollfds, buf_pair* buf_pairs, int i)
         if(errno == EAGAIN || errno == EWOULDBLOCK){
             
         } else {
-            perror("read1");
-            exit(EXIT_FAILURE);
+            kill_pair(pollfds,poll_size, buf_pairs,pr_sz, i);
+            perror("client disconnected");
+            return;
         }
     }
-    if(readed==0){
-        printf("readed zero bytes!!!!1\n");
-        exit(EXIT_FAILURE);
-    } else {
-    }
     buf_flush(fd2->fd, buffer1, 1);
-    //buf_flush(fd2->fd, buffer1, buffer1->size);
+    if(readed==0){
+        kill_pair(pollfds,poll_size, buf_pairs,pr_sz, i);
+        printf("client sent eof\n");
+        return;
+    }
 
     readed = buf_fill(fd2->fd, buffer2, 1);
     if(readed == -1){
         if(errno == EAGAIN || errno == EWOULDBLOCK){
         } else {
-            perror("read2");
-            exit(EXIT_FAILURE);
+            kill_pair(pollfds,poll_size, buf_pairs,pr_sz, i);
+            perror("client disconnected");
+            return;
         }
     }
-    if(readed==0){
-        printf("readed zero bytes!!!!1\n");
-        exit(EXIT_FAILURE);
-    }
     buf_flush(fd1->fd, buffer2, 1);
-    //buf_flush(fd1->fd, buffer2, buffer2->size);
-
-    //if(shutdown(fd_to, SHUT_WR)==-1) perror("Shutdown");
-    //if(close(fd_to)==-1) perror("close");
-    //printf("close %d %d", fd_from, fd_to);
+    if(readed==0){
+        kill_pair(pollfds,poll_size, buf_pairs,pr_sz, i);
+        printf("client sent eof\n");
+        return;
+    }
     //exit(EXIT_SUCCESS);
     printf("some_job ended \n");
 }
@@ -147,6 +169,10 @@ int rb_peek(int* rb, int* h, int* t, int* size)
 
 int main(int argc, char* argv[])
 {
+    if(argc<3){
+        perror("First two argument must be ports\n");
+        exit(EXIT_FAILURE);
+    }
     struct sockaddr client;
     struct sockaddr client2;
     socklen_t sz;
@@ -163,8 +189,10 @@ int main(int argc, char* argv[])
     int connections[qs0];
     int connections2[qs0];
     int h=0, t=0, h2=0, t2=0, qs=qs0, qs2 = qs0;
+    printf("initialized pollfds\n");
     while(1)
     {
+        printf("poll_size is %d\n", poll_size);
         int poll_res = poll(pollfds, poll_size, -1);
         printf("poll fired! %d\n", poll_res);
         if((pollfds[0].revents&POLLIN)!=0){
@@ -191,7 +219,7 @@ int main(int argc, char* argv[])
         }
         printf("poll_size is %d\n", poll_size);
         for(int i = 0; i<pairs_size;++i){
-            do_some_job(pollfds,buf_pairs,i);
+            do_some_job(pollfds, &poll_size, buf_pairs,&pairs_size, i);
         }
     }
     return 0;

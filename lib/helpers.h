@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#define _POSIX_SOURCE
 #ifndef HELPERS_H
 #define HELPERS_H
 
